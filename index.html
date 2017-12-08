@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<button onclick="save()">Zapisz</button>
+<script src="./src/jsmodel.js"></script>
+<script>
+    var tmp = new jsModel('https://jsonplaceholder.typicode.com/posts/:id', {id: 'id'});
+    var t1 = tmp.get({id: 1});
+    var t2 = new tmp();
+
+    function test(){
+        console.log(t1);
+        console.log(t2);
+    }
+
+    function save(){
+        t1.title = "test";
+        t1.update();
+    }
+    setInterval(test, 5000);
+</script>
+</body>
+</html>
