@@ -1,7 +1,7 @@
 /**
  * Created by MPoreda on 08.12.2017.
  */
-function Model(url, params) {
+function jsModel(url, params) {
     var url = url;
     var params = params;
     function getData(tmp_url, isMultiple)

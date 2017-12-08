@@ -9,3 +9,14 @@ To be honest, this shouldn't be public(lame code), but I didn't wanted to spend 
 It's still not finished, but i edit this only when i need more functionalities.
 
 Full code is under WTFPL license.
+
+TODO:
+Save, Update, Delete(didn't needed this jet).
+
+Example of usage:
+
+```
+var tmp = new jsModel('api/posts/:id', {id: 'id'});
+var t1 = tmp.get({id: 1});
+var t2 = tmp.query();
+```
