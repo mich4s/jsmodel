@@ -65,6 +65,35 @@ function jsModel(url, params) {
                     this[i] = prop[i];
             }
         });
+        Object.defineProperty(res, "save", {
+            enumerable: false,
+            configurable: false,
+            writable: false,
+            value: function() {
+                var tmp_url = this.properties.url;
+                var tmp = this;
+                for(var i in this.properties.params) {
+                    tmp_url = tmp_url.replace('/:'+i, '');
+                }
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", tmp_url, true);
+                xhr.onload = function (e) {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            var data = JSON.parse(xhr.responseText);
+                            if(!Array.isArray(data))
+                                tmp.writeData(data);
+                        } else {
+                            console.error(xhr.statusText);
+                        }
+                    }
+                };
+                xhr.onerror = function (e) {
+                    console.error(xhr.statusText);
+                };
+                xhr.send(JSON.stringify(this));
+            }
+        });
         Object.defineProperty(res, "update", {
             enumerable: false,
             configurable: false,
@@ -82,7 +111,7 @@ function jsModel(url, params) {
                 xhr.open("PUT", tmp_url, true);
                 xhr.onload = function (e) {
                     if (xhr.readyState === 4) {
-                        if (xhr.status === 200) {
+                        if (xhr.status >= 200 && xhr.status < 300) {
                             var data = JSON.parse(xhr.responseText);
                             if(!Array.isArray(data))
                                 res.writeData(data);
@@ -104,66 +133,42 @@ function jsModel(url, params) {
         return res;
     }
     var result = function(){
-        functionResult = {
-            query: function(arg) {
-                var tmp_url = url;
-                if(arg){
-                    for(var i in params) {
-                        for(var j in arg) {
-                            if(i == j) {
-                                tmp_url = tmp_url.replace('/:'+i, '/'+arg[j]);
-                            }
-                        }
-                    }
-                }else {
-                    for(var i in params) {
-                        tmp_url = tmp_url.replace('/:'+i, '');
-                    }
-                }
-                return getData(tmp_url, true);
-            },
-            get: function(arg) {
-                var tmp_url = url;
-                if(arg){
-                    for(var i in params) {
-                        for(var j in arg) {
-                            if(i == j) {
-                                tmp_url = tmp_url.replace('/:'+i, '/'+arg[j]);
-                            }
-                        }
-                    }
-                }else {
-                    for(var i in params) {
-                        tmp_url = tmp_url.replace('/:'+i, '');
-                    }
-                }
-                return getData(tmp_url);
-            }
-        };
-        this.get = functionResult.get;
-        this.query = functionResult.query;
-        // return new ObjectModel(false, {url: url, params: params});
-        // return functionResult;
+        return new ObjectModel(false, {url: url, params: params});
     }
-    Object.defineProperty(result, 'get', {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: function (param) {
-            var tmp = new this();
-            if(param)
-                return tmp.get(param);
-            return tmp.get();
+    result.query = function(arg) {
+        var tmp_url = url;
+        if(arg){
+            for(var i in params) {
+                for(var j in arg) {
+                    if(i == j) {
+                        tmp_url = tmp_url.replace('/:'+i, '/'+arg[j]);
+                    }
+                }
+            }
+        }else {
+            for(var i in params) {
+                tmp_url = tmp_url.replace('/:'+i, '');
+            }
         }
-    });
-    Object.defineProperty(result, 'constructor', {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: function () {
-            console.log("TEST");
+        return getData(tmp_url, true);
+    };
+    result.get = function(arg) {
+        var tmp_url = url;
+        if(arg){
+            for(var i in params) {
+                for(var j in arg) {
+                    if(i == j) {
+                        tmp_url = tmp_url.replace('/:'+i, '/'+arg[j]);
+                    }
+                }
+            }
+        }else {
+            for(var i in params) {
+                tmp_url = tmp_url.replace('/:'+i, '');
+            }
         }
-    })
+        return getData(tmp_url);
+    };
     result.prototype.constructor = function(){
         console.log("TEST");
     }
