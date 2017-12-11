@@ -4,9 +4,8 @@
 function jsModel(url, params) {
     var url = url;
     var params = params;
-    function getData(tmp_url, isMultiple)
-    {
-        if(isMultiple){
+    function getData(tmp_url, isMultiple) {
+        if (isMultiple) {
             var res = [];
             Object.defineProperty(res, "appendData", {
                 enumerable: false,
@@ -25,20 +24,14 @@ function jsModel(url, params) {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
                     var data = JSON.parse(xhr.responseText);
-                    if(isMultiple)
-                    {
-                        if(Array.isArray(data))
-                        {
-                            for(var i in data)
+                    if (isMultiple) {
+                        if (Array.isArray(data))
+                            for (var i in data)
                                 res.appendData(ObjectModel(data[i]));
-                        }
-                    }else{
-                        if(!Array.isArray(data))
-                            res.writeData(data);
-                    }
-                } else {
+                    } else if (!Array.isArray(data))
+                        res.writeData(data);
+                } else
                     console.error(xhr.statusText);
-                }
             }
         };
         xhr.onerror = function (e) {
@@ -47,8 +40,7 @@ function jsModel(url, params) {
         xhr.send(null);
         return res;
     }
-    function ObjectModel(params, properties)
-    {
+    function ObjectModel(params, properties) {
         var res = {};
         Object.defineProperty(res, 'properties', {
             enumerable: false,
@@ -61,37 +53,37 @@ function jsModel(url, params) {
             configurable: false,
             writable: false,
             value: function (prop) {
-                for(var i in prop)
+                for (var i in prop)
                     this[i] = prop[i];
             }
         });
+        function sendXhr(res, method, tmp_url) {
+            var xhr = new XMLHttpRequest();
+            xhr.open(method, tmp_url, true);
+            xhr.onload = function (e) {
+                if (xhr.readyState === 4) {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        var data = JSON.parse(xhr.responseText);
+                        if (!Array.isArray(data))
+                            res.writeData(data);
+                    } else
+                        console.error(xhr.statusText);
+                }
+            };
+            xhr.onerror = function (e) {
+                console.error(xhr.statusText);
+            };
+            xhr.send(JSON.stringify(res));
+        }
         Object.defineProperty(res, "save", {
             enumerable: false,
             configurable: false,
             writable: false,
-            value: function() {
+            value: function () {
                 var tmp_url = this.properties.url;
-                var tmp = this;
-                for(var i in this.properties.params) {
-                    tmp_url = tmp_url.replace('/:'+i, '');
-                }
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", tmp_url, true);
-                xhr.onload = function (e) {
-                    if (xhr.readyState === 4) {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            var data = JSON.parse(xhr.responseText);
-                            if(!Array.isArray(data))
-                                tmp.writeData(data);
-                        } else {
-                            console.error(xhr.statusText);
-                        }
-                    }
-                };
-                xhr.onerror = function (e) {
-                    console.error(xhr.statusText);
-                };
-                xhr.send(JSON.stringify(this));
+                for (var i in this.properties.params)
+                    tmp_url = tmp_url.replace('/:' + i, '');
+                sendXhr(res, 'POST', tmp_url);
             }
         });
         Object.defineProperty(res, "update", {
@@ -100,72 +92,45 @@ function jsModel(url, params) {
             writable: false,
             value: function () {
                 var tmp_url = this.properties.url;
-                    for(var i in this.properties.params) {
-                        for(var j in this) {
-                            if(i == j) {
-                                tmp_url = tmp_url.replace('/:'+i, '/'+this[j]);
-                            }
-                        }
-                    }
-                var xhr = new XMLHttpRequest();
-                xhr.open("PUT", tmp_url, true);
-                xhr.onload = function (e) {
-                    if (xhr.readyState === 4) {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            var data = JSON.parse(xhr.responseText);
-                            if(!Array.isArray(data))
-                                res.writeData(data);
-                        } else {
-                            console.error(xhr.statusText);
-                        }
-                    }
-                };
-                xhr.onerror = function (e) {
-                    console.error(xhr.statusText);
-                };
-                xhr.send(JSON.stringify(this));
+                for (var i in this.properties.params)
+                    for (var j in this)
+                        if (i == j)
+                            tmp_url = tmp_url.replace('/:' + i, '/' + this[j]);
+                sendXhr(res, 'PUT', tmp_url);
             }
         });
-        if(params){
-            for(var i in params)
+        if (params) {
+            for (var i in params)
                 res[i] = params[i];
         }
         return res;
     }
-    var result = function(){
+    var result = function () {
         return new ObjectModel(false, {url: url, params: params});
     }
-    result.query = function(arg) {
+    result.query = function (arg) {
         var tmp_url = url;
-        if(arg){
-            for(var i in params) {
-                for(var j in arg) {
-                    if(i == j) {
-                        tmp_url = tmp_url.replace('/:'+i, '/'+arg[j]);
-                    }
-                }
-            }
-        }else {
-            for(var i in params) {
-                tmp_url = tmp_url.replace('/:'+i, '');
-            }
+        if (arg) {
+            for (var i in params)
+                for (var j in arg)
+                    if (i == j)
+                        tmp_url = tmp_url.replace('/:' + i, '/' + arg[j]);
+        } else {
+            for (var i in params)
+                tmp_url = tmp_url.replace('/:' + i, '');
         }
         return getData(tmp_url, true);
     };
-    result.get = function(arg) {
+    result.get = function (arg) {
         var tmp_url = url;
-        if(arg){
-            for(var i in params) {
-                for(var j in arg) {
-                    if(i == j) {
-                        tmp_url = tmp_url.replace('/:'+i, '/'+arg[j]);
-                    }
-                }
-            }
-        }else {
-            for(var i in params) {
-                tmp_url = tmp_url.replace('/:'+i, '');
-            }
+        if (arg) {
+            for (var i in params)
+                for (var j in arg)
+                    if (i == j)
+                        tmp_url = tmp_url.replace('/:' + i, '/' + arg[j]);
+        } else {
+            for (var i in params)
+                tmp_url = tmp_url.replace('/:' + i, '');
         }
         return getData(tmp_url);
     };
