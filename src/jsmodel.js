@@ -169,8 +169,5 @@ function jsModel(url, params) {
         }
         return getData(tmp_url);
     };
-    result.prototype.constructor = function(){
-        console.log("TEST");
-    }
     return result;
 }
